@@ -1,0 +1,61 @@
+server:
+  port: 8085
+  
+management.endpoints.web.exposure.include: '*'
+management.endpoint.health.show-details: always
+
+resilience4j.circuitbreaker:
+  instances:
+    service1:
+      registerHealthIndicator: true
+      ringBufferSizeInClosedState: 5
+      ringBufferSizeInHalfOpenState: 3
+      waitDurationInOpenState: 10s
+      failureRateThreshold: 50
+      recordExceptions:
+        - org.springframework.web.client.HttpServerErrorException
+        - java.io.IOException
+        - java.util.concurrent.TimeoutException
+        - org.springframework.web.client.ResourceAccessException
+      ignoreExceptions:
+          - com.gl.orderManagementApp.service.MyException
+    service2:
+      registerHealthIndicator: true
+      ringBufferSizeInClosedState: 6
+      ringBufferSizeInHalfOpenState: 4
+      waitDurationInOpenState: 20s
+      failureRateThreshold: 60
+
+resilience4j.ratelimiter:
+  instances:
+    service1:
+      registerHealthIndicator: true
+      limitForPeriod: 5
+      limitRefreshPeriod: 60s
+      timeoutDuration: 0
+
+resilience4j.retry:
+  instances:
+    retryService1:
+      registerHealthIndicator: true
+      maxRetryAttempts: 3
+      waitDuration: 5s
+      retryExceptions:
+        - org.springframework.web.client.HttpServerErrorException
+        - java.io.IOException
+      
+
+resilience4j.bulkhead:
+  instances:
+    bulkheadService1:
+      registerHealthIndicator: true
+      maxWaitDuration: 10ms
+      maxConcurrentCall: 10
+
+resilience4j.thread-pool-bulkhead:
+  instances:
+    bulkheadService1:
+      registerHealthIndicator: true
+      maxThreadPoolSize: 1
+      coreThreadPoolSize: 1
+      queueCapacity: 1
